@@ -6,8 +6,10 @@ const GlobalStyle = createGlobalStyle`
     :root {
         --color-primary: #191414;
         --color-secondary: #1DB954;
+        --color-secondary-dark: #1aad4e;
         --header-font-size: 4rem;
         --body-font-size: 1.3rem;
+        box-sizing: border-box;
     }
 
     body {

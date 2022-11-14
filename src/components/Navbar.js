@@ -9,6 +9,9 @@ import { FaSpotify } from 'react-icons/fa'
 import axios from 'axios'
 import qs from 'qs'
 
+import { isValidated, authorizeUser, getAuthorizeUrl, getTokenFromRedirectUrl } from './Authenticate'
+
+const RESPONSIVE_MAX_WIDTH = 900;
 
 const Container = styled.div`
     display: flex;
@@ -18,7 +21,7 @@ const Container = styled.div`
     justify-content: space-around;
     align-items: center;
 
-    @media (max-width: 768px) {
+    @media (max-width: ${RESPONSIVE_MAX_WIDTH}px) {
         justify-content: center;
     }
 `
@@ -42,8 +45,9 @@ const NavList = styled.ul`
     display: flex;
     gap: 2rem;
     position: relative;
+    align-items: center;
 
-    @media (max-width: 768px) {
+    @media (max-width: ${RESPONSIVE_MAX_WIDTH}px) {
         display: none;
     }
 `
@@ -79,39 +83,31 @@ const SpotifyIcon = styled(FaSpotify)`
     font-size: 1.5rem;
 `
 
-const getAuth = async () => {
-    const CLIENT_ID = "760d1412462c461fb9ef3fc7ca5688d2"
-    const CLIENT_SECRET = "b9e51f7435c946858e43696e33c108b6"
+const AuthenticateButton = styled.a`
+    text-decoration: none;
+    color: #000;
+    font-family: 'Gotham Light', serif;
+    font-weight: 1000;
+    font-size: 1.2rem;
 
-    const auth_token = window.btoa(`${CLIENT_ID}:${CLIENT_SECRET}`);
+    background-color: var(--color-secondary-dark);
+    padding: .5rem 1.5rem;
+    border-radius: 30px;
 
-    const token_url = 'https://accounts.spotify.com/api/token';
+    transition: all 0.1s ease-in-out;
 
-    try{
-      //make post request to SPOTIFY API for access token, sending relavent info
-      const data = qs.stringify({'grant_type':'client_credentials'});
-  
-      const response = await axios.post(token_url, data, {
-        headers: { 
-          'Authorization': `Basic ${auth_token}`,
-          'Content-Type': 'application/x-www-form-urlencoded' 
-        }
-      })
-      //return access token
-      return response.data.access_token;
-      //console.log(response.data.access_token);   
-    }catch(error){
-      //on fail, log the error in console
-      console.log(error);
-      return null;
+    &:hover {
+        -webkit-box-shadow:inset 0px 0px 0px 2px var(--color-secondary-dark);
+        -moz-box-shadow:inset 0px 0px 0px 2px var(--color-secondary-dark);
+        box-shadow:inset 0px 0px 0px 2px var(--color-secondary-dark);
+        color: var(--color-secondary-dark);
+        background: none;
     }
-  }
+`
 
 export default function Navbar() {
 
-    const token = getAuth()
-    console.log(token)
-    const isAuthenticated = token != null
+    const isAuthenticated = isValidated()
 
     return (
         <Container>
@@ -126,12 +122,24 @@ export default function Navbar() {
                     />
                 </a>
             </Logo>
-            <NavList>
-                <NavItem to="/">home</NavItem>
-                <NavItem to="/">stats</NavItem>
-                <NavItem to={isAuthenticated ? "/playlists" : "/"}>playlists</NavItem>
-                <SocialIcon href="https://open.spotify.com/user/0wy58v4k1seh4grvacxy5qp0j?si=7ae034bf712b43c2"><SpotifyIcon/></SocialIcon>
-            </NavList>
+            {isValidated == true && 
+            //if the user is authenticated, show the nav bar
+            (
+                <NavList>
+                    <NavItem to="/">home</NavItem>
+                    <NavItem to="/">stats</NavItem>
+                    <NavItem to={isAuthenticated ? "/playlists" : getAuthorizeUrl()}>playlists</NavItem>
+                    <SocialIcon href="https://open.spotify.com/user/0wy58v4k1seh4grvacxy5qp0j?si=7ae034bf712b43c2"><SpotifyIcon/></SocialIcon>
+                </NavList>
+            )
+             || 
+             //if not authenticated, show login button
+             (
+                <NavList>
+                    <NavItem to="/">Global Stats</NavItem>
+                    <AuthenticateButton href={getAuthorizeUrl()}>Authenticate account</AuthenticateButton>
+                </NavList>
+             )}
         </Container>
     )
 }
