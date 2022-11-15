@@ -1,6 +1,9 @@
-import React from "react"
+import { useState, useEffect } from "react"
+import React from 'react'
 import { createGlobalStyle } from "styled-components"
 import Navbar from "./Navbar"
+
+import { handleRedirect, isValidated } from "./Authenticate"
 
 const GlobalStyle = createGlobalStyle`
     :root {
@@ -32,10 +35,20 @@ const GlobalStyle = createGlobalStyle`
 `
 
 export default function Layout({ children }) {
+
+    const [isAuthenticated, setIsAuthenticated] = useState(false)
+
+    useEffect(() => {
+        const hasAuthToken = isValidated();
+        if (hasAuthToken == true) {
+            setIsAuthenticated(true);
+    }}, [isAuthenticated]);
+
+    
   return (
     <React.Fragment>
         <GlobalStyle />
-        <Navbar />
+        <Navbar auth={isAuthenticated}/>
         {children}
     </React.Fragment>
   )

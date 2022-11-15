@@ -9,7 +9,7 @@ import { FaSpotify } from 'react-icons/fa'
 import axios from 'axios'
 import qs from 'qs'
 
-import { isValidated, authorizeUser, getAuthorizeUrl, getTokenFromRedirectUrl } from './Authenticate'
+import { isValidated, authorizeUser, getAuthorizeUrl, getTokenFromRedirectUrl, handleRedirect } from './Authenticate'
 
 const RESPONSIVE_MAX_WIDTH = 900;
 
@@ -31,6 +31,7 @@ const LogoSub = styled.h3`
     font-family: 'Gotham Light', serif;
     font-size: max(1.4vw, 1.2rem);
     color: #fff;
+    letter-spacing: 1px;
 `
 
 const Logo = styled.div`
@@ -85,34 +86,33 @@ const SpotifyIcon = styled(FaSpotify)`
 
 const AuthenticateButton = styled.a`
     text-decoration: none;
-    color: #000;
+    color: color: var(--color-secondary-dark);
     font-family: 'Gotham Light', serif;
-    font-weight: 1000;
     font-size: 1.2rem;
 
-    background-color: var(--color-secondary-dark);
+    background: none;
     padding: .5rem 1.5rem;
     border-radius: 30px;
+
+    -webkit-box-shadow:inset 0px 0px 0px 2px var(--color-secondary-dark);
+    -moz-box-shadow:inset 0px 0px 0px 2px var(--color-secondary-dark);
+    box-shadow:inset 0px 0px 0px 2px var(--color-secondary-dark);
 
     transition: all 0.1s ease-in-out;
 
     &:hover {
-        -webkit-box-shadow:inset 0px 0px 0px 2px var(--color-secondary-dark);
-        -moz-box-shadow:inset 0px 0px 0px 2px var(--color-secondary-dark);
-        box-shadow:inset 0px 0px 0px 2px var(--color-secondary-dark);
-        color: var(--color-secondary-dark);
-        background: none;
+        color: #000;
+        font-weight: 1000;
+        background-color: var(--color-secondary-dark);
     }
 `
 
-export default function Navbar() {
-
-    const isAuthenticated = isValidated()
+export default function Navbar( { auth } ) {
 
     return (
-        <Container>
+        <Container onLoad={handleRedirect}>
             <Logo>
-                <LogoSub>all in one for</LogoSub>
+                <LogoSub>Dashboard for</LogoSub>
                 <a href="https://www.spotify.com/us/">
                     <StaticImage 
                         className="unselectable"
@@ -122,13 +122,13 @@ export default function Navbar() {
                     />
                 </a>
             </Logo>
-            {isValidated == true && 
+            {auth == true && 
             //if the user is authenticated, show the nav bar
             (
                 <NavList>
                     <NavItem to="/">home</NavItem>
                     <NavItem to="/">stats</NavItem>
-                    <NavItem to={isAuthenticated ? "/playlists" : getAuthorizeUrl()}>playlists</NavItem>
+                    <NavItem to={auth ? "/playlists" : getAuthorizeUrl()}>playlists</NavItem>
                     <SocialIcon href="https://open.spotify.com/user/0wy58v4k1seh4grvacxy5qp0j?si=7ae034bf712b43c2"><SpotifyIcon/></SocialIcon>
                 </NavList>
             )
@@ -137,7 +137,7 @@ export default function Navbar() {
              (
                 <NavList>
                     <NavItem to="/">Global Stats</NavItem>
-                    <AuthenticateButton href={getAuthorizeUrl()}>Authenticate account</AuthenticateButton>
+                    <AuthenticateButton href={auth == false && getAuthorizeUrl() || ""}>Authenticate account</AuthenticateButton>
                 </NavList>
              )}
         </Container>
